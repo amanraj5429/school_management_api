@@ -3,14 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from sqlalchemy.orm import sessionmaker
 
-
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///school.db'
 db = SQLAlchemy(app)
 
-
 Session = sessionmaker()
+
 # Define models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,24 +29,19 @@ class Timetable(db.Model):
 with app.app_context():
     db.create_all()
 
-
-
 def check_role(role):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             user_id = request.args.get('user_id')  # Assuming you pass user_id in headers
-
-            # Create the session within the application context
             with app.app_context():
-                session = Session(bind=db.engine)  # Bind the session to the engine
-                # import pdb; pdb.set_trace()
+                session = Session(bind=db.engine)
                 user = session.get(User, user_id)
                 if user and user.role == role:
-                    session.close()  # Close the session when done
+                    session.close()
                     return func(*args, **kwargs)
                 else:
-                    session.close()  # Close the session on unauthorized access
+                    session.close()
                     return jsonify({'message': 'Unauthorized'}), 401
         return wrapper
     return decorator
@@ -67,39 +60,32 @@ def users():
         db.session.add(new_user)
         db.session.commit()
         return jsonify({'message': 'User created successfully'})
-    
+
 @app.route('/user/<int:user_id>', methods=['PUT', 'DELETE'])
 def user(user_id):
-    if request.method == 'PUT':
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
 
+    if request.method == 'PUT':
         data = request.get_json()
         user.name = data['name']
         user.role = data['role']
         db.session.commit()
         return jsonify({'message': 'User updated successfully'})
-    
-    elif request.method == 'DELETE':
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
 
+    elif request.method == 'DELETE':
         db.session.delete(user)
         db.session.commit()
         return jsonify({'message': 'User deleted successfully'})
 
-    
 # Routes for Subject CRUD operations
 @app.route('/read_subject', methods=['GET'])
 @check_role('Principal')
 def read_subject():
-        user_id = request.headers.get('user_id')
-        app.logger.info(f"Received user_id header: {user_id}")  # Log the header value
-        subjects = Subject.query.all()
-        subjects_data = [{'id': subject.id, 'name': subject.name} for subject in subjects]
-        return jsonify(subjects_data)
+    subjects = Subject.query.all()
+    subjects_data = [{'id': subject.id, 'name': subject.name} for subject in subjects]
+    return jsonify(subjects_data)
 
 @app.route('/create_subject', methods=['POST'])
 @check_role('Vice-principal')
@@ -109,7 +95,7 @@ def add_subject():
     db.session.add(new_subject)
     db.session.commit()
     return jsonify({'message': 'Subject created successfully'})
-    
+
 @app.route('/update_subject/<int:subject_id>', methods=['PUT'])
 @check_role('Vice-principal')
 def update_subject(subject_id):
@@ -149,7 +135,6 @@ def create_timetables():
     db.session.add(new_timetable)
     db.session.commit()
     return jsonify({'message': 'Timetable entry created successfully'})
-    
 
 @app.route('/update_timetables/<int:timetable_id>', methods=['PUT'])
 @check_role('Vice-principal')
@@ -164,7 +149,7 @@ def update_timetable(timetable_id):
     timetable.subject_id = data['subject_id']
     db.session.commit()
     return jsonify({'message': 'Timetable entry updated successfully'})
-    
+
 @app.route('/delete_timetables/<int:timetable_id>', methods=['DELETE'])
 @check_role('Principal')
 def delete_timetable(timetable_id):
@@ -193,14 +178,14 @@ def allocate_subject():
     timetable.subject = subject
     db.session.commit()
     return jsonify({'message': 'Subject allocated to timetable slot successfully'})
-    
+
 @app.route('/read_allocate_subject', methods=['GET'])
 @check_role('Principal')
 def read_allocate_subject():
     allocations = Timetable.query.filter(Timetable.subject_id.isnot(None)).all()
     allocation_data = [{'id': allocation.id, 'day': allocation.day, 'slot': allocation.slot, 'subject_id': allocation.subject_id} for allocation in allocations]
     return jsonify(allocation_data)
-    
+
 @app.route('/update_allocations/<int:allocation_id>', methods=['PUT'])
 @check_role('Vice-principal')
 def update_allocation(allocation_id):
@@ -219,7 +204,7 @@ def update_allocation(allocation_id):
     allocation.subject = subject
     db.session.commit()
     return jsonify({'message': 'Allocation updated successfully'})
-    
+
 @app.route('/delete_allocations/<int:allocation_id>', methods=['DELETE'])
 @check_role('Principal')
 def delete_allocation(allocation_id):
