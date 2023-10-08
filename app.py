@@ -4,7 +4,8 @@ from functools import wraps
 from sqlalchemy.orm import sessionmaker
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://aman4120108:VNHRU5UZS5fvOvTh5tjdAPFb3IiGlaSj@dpg-ckh4tki12bvs73aocm2g-a.oregon-postgres.render.com/app_db_bb5l'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://aman4120108:VNHRU5UZS5fvOvTh5tjdAPFb3IiGlaSj@dpg-ckh4tki12bvs73aocm2g-a.oregon-postgres.render.com/app_db_bb5l'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///school.db'
 
 db = SQLAlchemy(app)
 
