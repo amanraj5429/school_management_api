@@ -4,7 +4,8 @@ from functools import wraps
 from sqlalchemy.orm import sessionmaker
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///school.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://aman4120108:VNHRU5UZS5fvOvTh5tjdAPFb3IiGlaSj@dpg-ckh4tki12bvs73aocm2g-a.oregon-postgres.render.com/app_db_bb5l'
+
 db = SQLAlchemy(app)
 
 Session = sessionmaker()
@@ -37,6 +38,7 @@ def check_role(role):
             with app.app_context():
                 session = Session(bind=db.engine)
                 user = session.get(User, user_id)
+                import pdb;pdb.set_trace()
                 if user and user.role == role:
                     session.close()
                     return func(*args, **kwargs)
@@ -91,6 +93,7 @@ def read_subject():
 @check_role('Vice-principal')
 def add_subject():
     data = request.get_json()
+    import pdb;pdb.set_trace()
     new_subject = Subject(name=data['name'])
     db.session.add(new_subject)
     db.session.commit()
