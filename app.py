@@ -38,7 +38,6 @@ def check_role(role):
             with app.app_context():
                 session = Session(bind=db.engine)
                 user = session.get(User, user_id)
-                import pdb;pdb.set_trace()
                 if user and user.role == role:
                     session.close()
                     return func(*args, **kwargs)
@@ -228,4 +227,4 @@ def get_teachers():
     return jsonify(teachers_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
